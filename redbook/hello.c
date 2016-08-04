@@ -49,18 +49,6 @@ void display(UGWindow uwin)
  */
    glColor4f (1.0, 1.0, 1.0, 1.0);
    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-   glRotatef(10., 0.5, 0.5, 1.0);
-//   glTranslatef(-0.25, -0.25, 0);
-#if 0   
-   glTranslatef(0.25, 0.25, 0);
-   glScalef(0.5, 0.5, 1);
-   glTranslatef(-0.5, -0.5, 0);
-   glScalef(2, 2, 1);
-//   glScalef(0.5, 0.5, 1);
-   glColor4f (1.0, 1.0, 0, 1.0);
-#endif   
-   //glRotatef(10, 0, 0, 1.0);
-   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 /* don't wait!  
  * start processing buffered OpenGL routines 
@@ -95,25 +83,12 @@ void init (void)
  * Register callback function to display graphics.
  * Enter main loop and process events.
  */
-#ifdef FTK_AS_PLUGIN
-#include "ftk_app_demo.h"
-FTK_HIDE int FTK_MAIN(int argc, char* argv[]);
-FtkApp* ftk_app_demo_hellogles_create()
-{
-	return ftk_app_demo_create(_("helloGLES"), ftk_main);
-}
-#else
-#define FTK_HIDE extern
-#endif /*FTK_AS_PLUGIN*/
-
-FTK_HIDE int FTK_MAIN(int argc, char* argv[])
+int main(int argc, char** argv)
 {
    UGCtx ug = ugInit();
    UGWindow uwin = ugCreateWindow (ug, "", "hello", 250, 250, 100, 100);
    init();
    ugDisplayFunc(uwin, display); 
-#ifndef FTK_AS_PLUGIN
    ugMainLoop(ug);
-#endif   
    return 0;   /* ANSI C requires main to return int. */
 }

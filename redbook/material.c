@@ -45,7 +45,7 @@
 /*  Initialize z-buffer, projection matrix, light source, 
  *  and lighting model.  Do not specify a material property here.
  */
-static void init(void)
+void init(void)
 {
    GLfloat ambient[] = { 0.0, 0.0, 0.0, 1.0 };
    GLfloat diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -83,7 +83,7 @@ static void init(void)
  *  glTranslatef() is used to move spheres to their appropriate locations.
  */
 
-static void display(UGWindow uwin)
+void display(UGWindow uwin)
 {
    GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
    GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
@@ -257,7 +257,7 @@ static void display(UGWindow uwin)
    ugSwapBuffers(uwin);
 }
 
-static void reshape(UGWindow uwin, int w, int h)
+void reshape(UGWindow uwin, int w, int h)
 {
    glViewport(0, 0, w, h);
    glMatrixMode(GL_PROJECTION);
@@ -272,7 +272,7 @@ static void reshape(UGWindow uwin, int w, int h)
    glLoadIdentity();
 }
 
-static void keyboard(UGWindow uwin, int key, int x, int y)
+void keyboard(UGWindow uwin, int key, int x, int y)
 {
    switch (key) {
       case 27:
@@ -281,29 +281,15 @@ static void keyboard(UGWindow uwin, int key, int x, int y)
    }
 }
 
-#ifdef FTK_AS_PLUGIN
-#include "ftk_app_demo.h"
-FTK_HIDE int FTK_MAIN(int argc, char* argv[]);
-FtkApp* ftk_app_demo_material_create()
-{
-	return ftk_app_demo_create(_("material"), ftk_main);
-}
-#else
-#define FTK_HIDE extern
-#endif /*FTK_AS_PLUGIN*/
-
-FTK_HIDE int FTK_MAIN(int argc, char* argv[])
+int main(int argc, char** argv)
 {
    UGCtx ug = ugInit();
-   UGWindow uwin = ugCreateWindow (ug, "UG_DEPTH", "material", 600, 450, 100, 100);
+   UGWindow uwin = ugCreateWindow (ug, "UG_DEPTH", argv[0], 600, 450, 100, 100);
    init ();
    ugDisplayFunc(uwin, display); 
    ugReshapeFunc(uwin, reshape);
    ugKeyboardFunc(uwin, keyboard);
-#ifndef FTK_AS_PLUGIN
    ugMainLoop(ug);
-#endif
-
    return 0; 
 }
 

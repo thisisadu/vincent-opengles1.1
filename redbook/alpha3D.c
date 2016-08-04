@@ -67,7 +67,7 @@ static void init(void)
    glEnable(GL_DEPTH_TEST);
 }
 
-static void display(UGWindow uwin)
+void display(UGWindow uwin)
 {
    GLfloat mat_solid[] = { 0.75, 0.75, 0.0, 1.0 };
    GLfloat mat_zero[] = { 0.0, 0.0, 0.0, 1.0 };
@@ -100,7 +100,7 @@ static void display(UGWindow uwin)
    ugSwapBuffers(uwin);
 }
 
-static void reshape(UGWindow uwin, int w, int h)
+void reshape(UGWindow uwin, int w, int h)
 {
    glViewport(0, 0, (GLint) w, (GLint) h);
    glMatrixMode(GL_PROJECTION);
@@ -115,7 +115,7 @@ static void reshape(UGWindow uwin, int w, int h)
    glLoadIdentity();
 }
 
-static void animate(UGWindow uwin)
+void animate(UGWindow uwin)
 {
    if (solidZ <= MINZ || transparentZ >= MAXZ)
       ugIdleFunc(ugCtxFromWin(uwin), NULL);
@@ -126,7 +126,7 @@ static void animate(UGWindow uwin)
    }
 }
 
-static void keyboard(UGWindow uwin, int key, int x, int y)
+void keyboard(UGWindow uwin, int key, int x, int y)
 {
    switch (key) {
       case 'a':
@@ -146,30 +146,15 @@ static void keyboard(UGWindow uwin, int key, int x, int y)
     }
 }
 
-#ifdef FTK_AS_PLUGIN
-#include "ftk_app_demo.h"
-FTK_HIDE int FTK_MAIN(int argc, char* argv[]);
-FtkApp* ftk_app_demo_alpha3D_create()
-{
-	return ftk_app_demo_create(_("alpha3D"), ftk_main);
-}
-#else
-#define FTK_HIDE extern
-#endif /*FTK_AS_PLUGIN*/
-
-FTK_HIDE int FTK_MAIN(int argc, char* argv[])
+int main(int argc, char** argv)
 {
    UGCtx ug = ugInit();
-   UGWindow uwin = ugCreateWindow (ug, "", "alpha3D", 500, 500, 100, 100);
+   UGWindow uwin = ugCreateWindow (ug, "", argv[0], 500, 500, 100, 100);
    init();
    ugDisplayFunc(uwin, display); 
    ugReshapeFunc(uwin, reshape);
    ugKeyboardFunc(uwin, keyboard);
    ugIdleFunc(ugCtxFromWin(uwin), animate);
-
-#ifndef FTK_AS_PLUGIN
    ugMainLoop(ug);
-#endif
-
    return 0;
 }

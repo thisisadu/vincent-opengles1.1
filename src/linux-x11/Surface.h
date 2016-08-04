@@ -46,7 +46,7 @@
 #include "fixed.h"
 #include "Color.h"
 #include "Color.h"
-#include "linux-config.h"
+//#include "linux-config.h"
 
 #ifdef HAVE_X11_EXTENSIONS_XSHM_H
 #include <X11/extensions/XShm.h>
