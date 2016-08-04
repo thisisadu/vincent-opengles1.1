@@ -25,6 +25,7 @@
 #ifndef __ug_h__
 #define __ug_h__
 
+#include "GLES/gl.h"
 #include "GLES/egl.h"
 
 #ifdef _WIN32
@@ -103,7 +104,7 @@ extern void APIENTRY ugSolidConef(GLfloat base, GLfloat height, GLint slices, GL
 extern void APIENTRY ugSolidCubef(GLfloat size);
 extern void APIENTRY ugSolidDisk(GLfloat inner_radius, GLfloat outer_radius, GLshort rings, GLshort slices);
 extern void APIENTRY ugSolidSpheref(GLfloat radius, GLint slices, GLint stacks);
-extern void APIENTRY ugSolidTorusf(GLfloat ir, GLfloat or, GLint sides, GLint rings);
+extern void APIENTRY ugSolidTorusf(GLfloat ir, GLfloat orr, GLint sides, GLint rings);
 extern void APIENTRY ugSolidTube(GLfloat radius, GLfloat height, GLshort stacks, GLshort slices);
 
 extern void APIENTRY ugWireBox(GLfloat Width, GLfloat Depth, GLfloat Height);
@@ -111,7 +112,7 @@ extern void APIENTRY ugWireConef(GLfloat base, GLfloat height, GLint slices, GLi
 extern void APIENTRY ugWireCubef(GLfloat size);
 extern void APIENTRY ugWireDisk(GLfloat inner_radius, GLfloat outer_radius, GLshort rings, GLshort slices);
 extern void APIENTRY ugWireSpheref(GLfloat radius, GLint slices, GLint stacks);
-extern void APIENTRY ugWireTorusf(GLfloat ir, GLfloat or, GLint sides, GLint rings);
+extern void APIENTRY ugWireTorusf(GLfloat ir, GLfloat orr, GLint sides, GLint rings);
 extern void APIENTRY ugWireTube(GLfloat radius, GLfloat height, GLshort stacks, GLshort slices);
 
 

@@ -24,7 +24,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <GLES/gl.h>
 #include <GLES/egl.h>
+#include "ug.h"
 
 #define __GL_FLOAT
 #ifdef __GL_FLOAT

@@ -30,7 +30,7 @@
 #define PI_ 3.14159265358979323846
 
 void APIENTRY
-ugSolidTorusf(GLfloat ir, GLfloat or, GLint sides, GLint rings) 
+ugSolidTorusf(GLfloat ir, GLfloat orr, GLint sides, GLint rings) 
 {
     GLint i, j, k, triangles;
     GLfloat s, t, x, y, z, twopi, nx, ny, nz;
@@ -42,7 +42,7 @@ ugSolidTorusf(GLfloat ir, GLfloat or, GLint sides, GLint rings)
 
     if (v) 
 	{
-		if (parms[0] != ir || parms[1] != or || parms[2] != sides || parms[3] != rings) 
+		if (parms[0] != ir || parms[1] != orr || parms[2] != sides || parms[3] != rings) 
 		{
 			free(v);
 			free(n);
@@ -56,7 +56,7 @@ ugSolidTorusf(GLfloat ir, GLfloat or, GLint sides, GLint rings)
     if (!v) 
 	{
 		parms[0] = ir; 
-		parms[1] = or; 
+		parms[1] = orr; 
 		parms[2] = (GLfloat)sides; 
 		parms[3] = (GLfloat)rings;
 
@@ -85,8 +85,8 @@ ugSolidTorusf(GLfloat ir, GLfloat or, GLint sides, GLint rings)
 					cos_t = (GLfloat)cos(twopi_t);
 					sin_t = (GLfloat)sin(twopi_t);
 
-					x = (or+ir*(GLfloat)cos_s)*(GLfloat)cos_t;
-					y = (or+ir*(GLfloat)cos_s)*(GLfloat)sin_t;
+					x = (orr+ir*(GLfloat)cos_s)*(GLfloat)cos_t;
+					y = (orr+ir*(GLfloat)cos_s)*(GLfloat)sin_t;
 					z = ir * (GLfloat)sin_s;
 
 					*p++ = x;
