@@ -115,13 +115,13 @@ ugCreateWindow(UGCtx ug,  const char* config,
       EGLConfig configs[1];
       int size,screen_num;
 
+      memset(w, 0, sizeof *w);
+
       /*XXXblythe horrible hack, need to parse config string*/
       static int attribs[] = { EGL_RED_SIZE, 1, EGL_NONE }; /*XXXblythe*/
       static int attribs2[] = {EGL_RED_SIZE, 1, EGL_DEPTH_SIZE, 1, EGL_NONE};
       int depth = strstr(config, "UG_DEPTH") != 0;
 
-      memset(w, 0, sizeof *w);
-      w->ug = _ug;
       if (!eglChooseConfig(_ug->egldpy, depth ? attribs2 : attribs, configs, 1, &n)) {
         free(w);
         return 0;
@@ -130,10 +130,14 @@ ugCreateWindow(UGCtx ug,  const char* config,
       eglGetConfigAttrib(_ug->egldpy, configs[0], EGL_NATIVE_VISUAL_ID, &vid);
 
       screen_num = DefaultScreen(_ug->dpy);
-      w->win = XCreateSimpleWindow(_ug->dpy, DefaultRootWindow(_ug->dpy),
-                                x, y, width, height, 0,
-                                   BlackPixel(_ug->dpy, screen_num),
-                                   WhitePixel(_ug->dpy, screen_num));
+      w->win = XCreateSimpleWindow(_ug->dpy, DefaultRootWindow(_ug->dpy), x, y, width, height, 0, BlackPixel(_ug->dpy, screen_num), WhitePixel(_ug->dpy, screen_num));
+      if (!w->win) {
+        free(w);
+        return 0;
+      }
+
+      /* subscribe to the given set of event types. */
+      XSelectInput(_ug->dpy, w->win, ExposureMask | KeyPressMask | ButtonPressMask | Button1MotionMask | Button2MotionMask | StructureNotifyMask);
 
       /* make the window actually appear on the screen. */
       XMapWindow(_ug->dpy,w->win);
@@ -141,29 +145,20 @@ ugCreateWindow(UGCtx ug,  const char* config,
       /* flush all pending requests to the X server. */
       XFlush(_ug->dpy);
 
-      /* subscribe to the given set of event types. */
-      XSelectInput(_ug->dpy, w->win, ExposureMask | KeyPressMask |
-                   ButtonPressMask | Button1MotionMask |
-                   Button2MotionMask | StructureNotifyMask);
-
-      if (!w->win)
-      {
-        free(w);
-        return 0;
-      }
-
-      w->next = _ug->winlist;
-      _ug->winlist = w;
-      w->prev = 0;
-      if (w->next) w->next->prev = w;
-
-      w->width = width;
-      w->height = height;
-
       w->surface = eglCreateWindowSurface(_ug->egldpy, w->eglconfig, (NativeWindowType)(w->win), 0);
       /*XXXblythe share*/
       w->eglctx = eglCreateContext(_ug->egldpy, w->eglconfig, NULL, NULL);
+
       bind_context(_ug, w);
+
+      w->ug = _ug;
+      w->width = width;
+      w->height = height;
+      w->next = _ug->winlist;
+      _ug->winlist = w;
+      w->prev = 0;
+      if (w->next) 
+	w->next->prev = w;
     }
     return (UGWindow)w;
 }
@@ -277,7 +272,7 @@ ugMainLoop(UGCtx ug) {
     XEvent an_event;
 
     while (1) {
-      struct timeval tv = { 0, 50000}; 
+      struct timeval tv = { 0, 40000}; 
       if (next_event_timeout(context->dpy, &an_event, &tv)) {
         switch (an_event.type) {
         case Expose:
@@ -289,8 +284,8 @@ ugMainLoop(UGCtx ug) {
         case ConfigureNotify:
           width = an_event.xconfigure.width;
           height = an_event.xconfigure.height;
-          printf("%d,%d,%d,%d\n",w->width,w->height,width,height);
           if (w->width != width || w->height != height){
+            printf("%d,%d,%d,%d\n",w->width,w->height,width,height);
             w->width = width;
             w->height = height;
 
@@ -348,7 +343,7 @@ void APIENTRY
 ugPostRedisplay(UGWindow uwin) {
     printf("post redisplay\n");
     UGWindow_t* w = (UGWindow_t*)uwin;
-    XClearArea(w->ug->dpy, w->win, 0, 0, 0, 0, true);
+    XClearArea(w->ug->dpy, w->win, 0, 0, 1, 1, true);
     XFlush(w->ug->dpy);
 }
 
