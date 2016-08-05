@@ -22,6 +22,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <sys/time.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -241,16 +243,43 @@ static int GetKey(KeySym vk) {
 	}
 }
 
+static int next_event_timeout(Display* dsp, XEvent* event_return, struct timeval* tv)
+{
+  // optimization
+  if (tv == NULL) {
+    XNextEvent(dsp, event_return);
+    return 1;
+  }
+
+  // the real deal
+  if (XPending(dsp) == 0) {
+    int fd = ConnectionNumber(dsp);
+    fd_set readset;
+    FD_ZERO(&readset);
+    FD_SET(fd, &readset);
+    if (select(fd+1, &readset, NULL, NULL, tv) == 0) {
+      return 0;
+    } else {
+      XNextEvent(dsp, event_return);
+      return 1;
+    }
+  } else {
+    XNextEvent(dsp, event_return);
+    return 1;
+  }
+}
+
 void APIENTRY
 ugMainLoop(UGCtx ug) {
-  int done = 0;
-	context = (UGCtx_t *) ug;
-  UGWindow_t *w = context->win;
+	  context = (UGCtx_t *) ug;
+    UGWindow_t *w = context->win;
     int width,height;
     XEvent an_event;
-    while (done != 1) {
-      XNextEvent(context->dpy, &an_event);
-      switch (an_event.type) {
+
+    while (1) {
+      struct timeval tv = { 0, 50000}; 
+      if (next_event_timeout(context->dpy, &an_event, &tv)) {
+        switch (an_event.type) {
         case Expose:
           if(w->draw){
             printf("call draw fun\n");
@@ -268,6 +297,7 @@ ugMainLoop(UGCtx ug) {
             if (w->surface) {
               eglDestroySurface(w->ug->egldpy, w->surface);
               w->surface = eglCreateWindowSurface(w->ug->egldpy, w->eglconfig, (NativeWindowType)(w->win), 0);
+              bind_context(ug,w);
             }
 
             if(w->reshape){
@@ -290,32 +320,28 @@ ugMainLoop(UGCtx ug) {
           break;
         case MotionNotify:
           break;
-      case KeyPress:
-        {
-          KeySym keysym;
-          char buf[128] = {0};
-          XLookupString(&an_event.xkey, buf, sizeof buf, &keysym, NULL);
-          if(keysym == XK_Escape)
-            done = 1;
-          else if(w->kbd){
-            int k = GetKey(keysym);
-            printf("call kbd fun %d\n",k);
-            w->kbd((UGWindow)w,k,0,0);
+        case KeyPress:
+          {
+            KeySym keysym;
+            char buf[128] = {0};
+            XLookupString(&an_event.xkey, buf, sizeof buf, &keysym, NULL);
+            if(w->kbd){
+              int k = GetKey(keysym);
+              printf("call kbd fun %d\n",k);
+              w->kbd((UGWindow)w,k,0,0);
+            }
+            break;
           }
-          break;
-        }
         default: /* ignore any other event types. */
           break;
-      } /* end switch on event type */
-
-      //idle thing
-      /* if (!XPending(context->dpy)) {
-        if(context->idle)
+        } /* end switch */
+      } else {
+        if(context->idle) {
           printf("call idle fun\n");
           context->idle((UGWindow)w);
-          }*/
+        }
+      }
     } /* end while events handling */
-
 }
 
 void APIENTRY
