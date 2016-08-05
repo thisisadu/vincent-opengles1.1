@@ -40,6 +40,7 @@
  * Interaction:  pressing the s and e keys (shoulder and elbow)
  * alters the rotation of the robot arm.
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include "ug.h"
 
@@ -116,7 +117,7 @@ void keyboard (UGWindow uwin, int key, int x, int y)
 int main(int argc, char** argv)
 {
    UGCtx ug = ugInit();
-   UGWindow uwin = ugCreateWindow (ug, "", argv[0], 500, 500, 100, 100);
+   UGWindow uwin = ugCreateWindow (ug, "", argv[0], 1500, 800, 100, 100);
    init();
    ugDisplayFunc(uwin, display); 
    ugReshapeFunc(uwin, reshape);

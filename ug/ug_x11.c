@@ -214,42 +214,114 @@ ugIdleFunc(UGCtx ug, void (*f)(UGWindow w)) {
     _ug->idle = f;
 }
 
+static int GetKey(KeySym vk) {
+	switch (vk) {
+	case XK_F1:			return UG_KEY_F1;
+	case XK_F2:			return UG_KEY_F2;
+	case XK_F3:			return UG_KEY_F3;
+	case XK_F4:			return UG_KEY_F4;
+	case XK_F5:			return UG_KEY_F5;
+	case XK_F6:			return UG_KEY_F6;
+	case XK_F7:			return UG_KEY_F7;
+	case XK_F8:			return UG_KEY_F8;
+	case XK_F9:			return UG_KEY_F9;
+	case XK_F10:		return UG_KEY_F10;
+	case XK_F11:		return UG_KEY_F11;
+	case XK_F12:		return UG_KEY_F12;
+	case XK_Left:		return UG_KEY_LEFT;
+	case XK_Up:			return UG_KEY_UP;
+	case XK_Right:		return UG_KEY_RIGHT;
+	case XK_Down:		return UG_KEY_DOWN;
+	case XK_Prior:		return UG_KEY_PAGE_UP;
+	case XK_Next:		return UG_KEY_PAGE_DOWN;
+	case XK_Home:		return UG_KEY_HOME;
+	case XK_End:		return UG_KEY_END;
+	case XK_Insert:		return UG_KEY_INSERT;
+	default:			return vk;
+	}
+}
+
 void APIENTRY
 ugMainLoop(UGCtx ug) {
+  int done = 0;
 	context = (UGCtx_t *) ug;
   UGWindow_t *w = context->win;
-    int done = 0;
     int width,height;
     XEvent an_event;
-    while (!done) {
+    while (done != 1) {
       XNextEvent(context->dpy, &an_event);
       switch (an_event.type) {
         case Expose:
-          (w->draw)((UGWindow) w);
+          if(w->draw){
+            printf("call draw fun\n");
+            (w->draw)((UGWindow) w);
+          }
           break;
         case ConfigureNotify:
-          /* update the size of our window, for expose events. */
           width = an_event.xconfigure.width;
           height = an_event.xconfigure.height;
+          printf("%d,%d,%d,%d\n",w->width,w->height,width,height);
+          if (w->width != width || w->height != height){
+            w->width = width;
+            w->height = height;
+
+            if (w->surface) {
+              eglDestroySurface(w->ug->egldpy, w->surface);
+              w->surface = eglCreateWindowSurface(w->ug->egldpy, w->eglconfig, (NativeWindowType)(w->win), 0);
+            }
+
+            if(w->reshape){
+              printf("call reshape fun,%d,%d\n",width,height);
+              (w->reshape)((UGWindow) w,width,height);
+            }
+          }
           break;
         case ButtonPress:
+          if(w->pointer){
+            printf("call pointer fun\n");
+            XButtonEvent *xbtn = &an_event.xbutton;
+            if(xbtn->button == Button1)
+              w->pointer((UGWindow)w,UG_BUT_LEFT, UG_BUT_DOWN,xbtn->x,xbtn->y);
+            else if(xbtn->button == Button2)
+              w->pointer((UGWindow)w,UG_BUT_RIGHT,UG_BUT_DOWN,xbtn->x,xbtn->y);
+          }
           break;
         case MotionNotify:
           break;
-        case KeyPress:
-          /* exit the application by braking out of the events loop. */
-          done = 1;
+      case KeyPress:
+        {
+          KeySym keysym;
+          char buf[128] = {0};
+          XLookupString(&an_event.xkey, buf, sizeof buf, &keysym, NULL);
+          if(keysym == XK_Escape)
+            done = 1;
+          else if(w->kbd){
+            int k = GetKey(keysym);
+            printf("call kbd fun %d\n",k);
+            w->kbd((UGWindow)w,k,0,0);
+          }
           break;
+        }
         default: /* ignore any other event types. */
           break;
       } /* end switch on event type */
+
+      //idle thing
+      /* if (!XPending(context->dpy)) {
+        if(context->idle)
+          printf("call idle fun\n");
+          context->idle((UGWindow)w);
+          }*/
     } /* end while events handling */
 
 }
 
 void APIENTRY
 ugPostRedisplay(UGWindow uwin) {
+    printf("post redisplay\n");
     UGWindow_t* w = (UGWindow_t*)uwin;
+    XClearArea(w->ug->dpy, w->win, 0, 0, 0, 0, true);
+    XFlush(w->ug->dpy);
 }
 
 void APIENTRY
