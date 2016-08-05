@@ -129,7 +129,7 @@ ugCreateWindow(UGCtx ug,  const char* config,
 
       screen_num = DefaultScreen(_ug->dpy);
       w->win = XCreateSimpleWindow(_ug->dpy, DefaultRootWindow(_ug->dpy),
-                                x, y, width, height, 2,
+                                x, y, width, height, 0,
                                    BlackPixel(_ug->dpy, screen_num),
                                    WhitePixel(_ug->dpy, screen_num));
 
@@ -278,12 +278,14 @@ ugMainLoop(UGCtx ug) {
           break;
         case ButtonPress:
           if(w->pointer){
-            printf("call pointer fun\n");
             XButtonEvent *xbtn = &an_event.xbutton;
+            printf("call pointer fun\n");
             if(xbtn->button == Button1)
               w->pointer((UGWindow)w,UG_BUT_LEFT, UG_BUT_DOWN,xbtn->x,xbtn->y);
             else if(xbtn->button == Button2)
               w->pointer((UGWindow)w,UG_BUT_RIGHT,UG_BUT_DOWN,xbtn->x,xbtn->y);
+            else if(xbtn->button == Button3)
+              w->pointer((UGWindow)w,UG_BUT_MIDDLE,UG_BUT_DOWN,xbtn->x,xbtn->y);
           }
           break;
         case MotionNotify:
